@@ -3,11 +3,21 @@ project(glPong C)
 
 include_directories(
     "lib"
-    "deps/libs"
+    "deps/libs/cglm/include/"
+    "deps/libs/Nuklear/"
+    "deps/libs/cgl/lib/"
+)
+
+link_directories(
+    "deps/libs/cglm/build/"
+    "deps/libs/cgl/build/"
 )
 
 set(
     LIB_SOURCES
+    "lib/glPong/ball.c"
+    "lib/glPong/paddle.c"
+    "lib/glPong/drawable.c"
 ) 
 
 set(
@@ -26,5 +36,5 @@ add_executable(
 
 target_link_libraries(
     ${CMAKE_PROJECT_NAME} 
-    PRIVATE GLEW::GLEW glfw
+    PRIVATE GLEW::GLEW glfw cglm cgl
 )

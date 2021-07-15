@@ -1,3 +1,5 @@
+#include "glPong/ball.h"
+#include "glPong/paddle.h"
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -6,14 +8,27 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+struct GameContext
+{
+    struct Paddle *lPaddle;
+    struct Paddle *rPaddle;
+    struct Ball *ball;
+};
+
+void GameContextInit(struct GameContext *gc);
+void GameContextDelete(struct GameContext *gc);
+
 static void framebufferSizeCB(GLFWwindow *window, int w, int h);
-static void processInput(GLFWwindow *window);
+static void processInput(GLFWwindow *window, struct GameContext *ctx);
 
 int main()
 {
     GLFWwindow *window = NULL;
     GLint glewStatus = 0;
+    struct GameContext ctx;
+    int err = 0;
 
+    // init window
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -22,7 +37,7 @@ int main()
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glPong", NULL, NULL);
     if (!window)
     {
-        log_err("Unable to create a GLFW window... exiting");
+        LogError("Unable to create a GLFW window... exiting");
         glfwTerminate();
         return -1;
     }
@@ -34,7 +49,7 @@ int main()
 
     if (glewStatus != GLEW_OK)
     {
-        log_err("Unable to init GLEW... exiting");
+        LogError("Unable to init GLEW... exiting");
         glfwTerminate();
         return -1;
     }
@@ -42,18 +57,48 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
 
+    // init game context
+    GameContextInit(&ctx);
+
+    // load resources
+    err = PaddleLoadResources(ctx.lPaddle);
+    if (err)
+    {
+        LogError("Unable to load left paddle resources...");
+        goto error_out;
+    }
+    err = PaddleLoadResources(ctx.rPaddle);
+    if (err)
+    {
+        LogError("Unable to load right paddle resources...");
+        goto error_out;
+    }
+    err = BallLoadResources(ctx.ball);
+    if (err)
+    {
+        LogError("Unable to load ball resources...");
+        goto error_out;
+    }
+
+    // all resources loaded normally -> start drawing the window and the game
+
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
+        processInput(window, &ctx);
 
-        glClearColor(0.3f, 0.2f, 0.17f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // glClearColor(0.3f, 0.2f, 0.17f, 1.0f);
+        // glClear(GL_COLOR_BUFFER_BIT);
 
-        // draw after drawing the background color
+        PaddleDraw(ctx.lPaddle);
+        PaddleDraw(ctx.rPaddle);
+        BallDraw(ctx.ball);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+error_out:
+    GameContextDelete(&ctx);
 
     glfwTerminate();
     return 0;
@@ -65,10 +110,29 @@ static void framebufferSizeCB(GLFWwindow *window, int w, int h)
     glViewport(0, 0, w, h);
 }
 
-static void processInput(GLFWwindow *window)
+static void processInput(GLFWwindow *window, struct GameContext *ctx)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, 1);
     }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        // make player go up
+    }
+}
+
+void GameContextInit(struct GameContext *gc)
+{
+    // load paddles and a ball
+    gc->lPaddle = PaddleNew();
+    gc->rPaddle = PaddleNew();
+    gc->ball = BallNew();
+}
+
+void GameContextDelete(struct GameContext *gc)
+{
+    PaddleDelete(gc->lPaddle);
+    PaddleDelete(gc->rPaddle);
+    BallDelete(gc->ball);
 }

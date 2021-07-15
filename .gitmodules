@@ -1,0 +1,9 @@
+[submodule "deps/libs/cglm"]
+	path = deps/libs/cglm
+	url = https://github.com/recp/cglm.git
+[submodule "deps/libs/Nuklear"]
+	path = deps/libs/Nuklear
+	url = https://github.com/Immediate-Mode-UI/Nuklear.git
+[submodule "deps/libs/cgl"]
+	path = deps/libs/cgl
+	url = git@github.com:mcindrich/cgl.git
