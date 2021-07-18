@@ -1,6 +1,8 @@
 #include "cgl/shader.h"
 #include "cgl/shader_program.h"
 #include "cgl/vbo.h"
+#include "cglm/mat4.h"
+#include "cglm/vec2.h"
 #include <glPong/drawable.h>
 
 struct Drawable *DrawableNew()
@@ -23,9 +25,23 @@ struct Drawable *DrawableNew()
     cgl_shader_init(&d->fShader);
     cgl_shader_program_init(&d->prog);
 
-    glm_vec2((vec2){0, 0}, d->pos);
+    glm_vec4((vec3){0, 0, 0}, 0, d->pos);
+    glm_vec4((vec3){0, 0, 0}, 0, d->prevPos);
+
+    d->speed = 0;
+    d->rotAngle = 0;
 
     return d;
+}
+
+void DrawableSetSpeed(struct Drawable *d, float s)
+{
+    d->speed = s;
+}
+
+void DrawableSetRectSize(struct Drawable *d, vec2 s)
+{
+    glm_vec2_copy(s, d->rectSize);
 }
 
 void DrawableDelete(struct Drawable *d)

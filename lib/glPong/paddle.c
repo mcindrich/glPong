@@ -1,10 +1,18 @@
 #include "cgl/common.h"
+#include "cgl/object.h"
 #include "cgl/shader.h"
 #include "cgl/shader_program.h"
+#include "cglm/affine-mat.h"
+#include "cglm/affine.h"
+#include "cglm/cam.h"
+#include "cglm/mat4.h"
+#include "cglm/vec4.h"
+#include "glPong/direction.h"
 #include "glPong/drawable.h"
 #include "glPong/log.h"
 #include <glPong/paddle.h>
 #include <stdlib.h>
+#include <glPong/log.h>
 
 struct Paddle *PaddleNew()
 {
@@ -33,10 +41,10 @@ int PaddleLoadResources(struct Paddle *p)
     // load shaders and anything needed to use the paddle
     // also configure vertex data and attributes
     float vertices[] = {
-        0.5f,  0.5f,  // top right
-        0.5f,  -0.5f, // bottom right
-        -0.5f, -0.5f, // bottom left
-        -0.5f, 0.5f   // top left
+        .5f,  1,  // top right
+        .5f,  -1, // bottom right
+        -.5f, -1, // bottom left
+        -.5f, 1   // top left
     };
     unsigned int indices[] = {
         0, 1, 3, // first triangle
@@ -108,16 +116,92 @@ int PaddleLoadResources(struct Paddle *p)
     return err;
 }
 
-void PaddleDraw(struct Paddle *p)
+void PaddleDraw(struct Paddle *p, int neg_pos)
 {
+    int loc = -1;
+    struct cgl_shader_program *prog = &p->draw->prog;
+    struct Drawable *draw = p->draw;
+    const int w = draw->uResolution[0];
+    const int h = draw->uResolution[1];
+
     // use shader before configuring uniforms
-    cgl_shader_program_use(&p->draw->prog);
+    cgl_shader_program_use(prog);
 
     // configure uniforms...
+    // configure matrices
+    glm_mat4_identity(draw->uTranslation);
+    glm_mat4_identity(draw->uScaling);
+    glm_mat4_identity(draw->uRotation);
+
+    if (neg_pos)
+    {
+        draw->pos[0] = -((float)w - (float)w / 20);
+    }
+    else
+    {
+        draw->pos[0] = ((float)w - (float)w / 20);
+    }
+
+    // LogDebug("translating by (%f, %f)", draw->pos[0] / w, draw->pos[1] / h);
+    glm_translate(draw->uTranslation, (vec3){draw->pos[0] / w, draw->pos[1] / h, 0});
+    glm_rotate(draw->uRotation, draw->rotAngle, (vec3){0, 0, 1});
+    glm_scale(draw->uScaling, (vec3){draw->rectSize[0], draw->rectSize[1], 0});
+    // glm_ortho(0, w, 0, h, .1f, 100, draw->projectionMatrix);
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uTranslation");
+    if (loc != -1)
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, (float *)draw->uTranslation);
+    }
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uRotation");
+    if (loc != -1)
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, (float *)draw->uRotation);
+    }
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uScaling");
+    if (loc != -1)
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, (float *)draw->uScaling);
+    }
 
     // bind VAO and draw elements and after that unbind
-    cgl_vao_bind(&p->draw->vao);
+    cgl_vao_bind(&draw->vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void PaddleMove(struct Paddle *p, enum Direction dir)
+{
+    const int w = p->draw->uResolution[0];
+    const int h = p->draw->uResolution[1];
+    const float incPos = p->draw->speed * h;
+
+    switch (dir)
+    {
+    case DirectionNone:
+        break;
+    case DirectionLeft:
+        p->draw->rotAngle -= glm_rad(1.5);
+        break;
+    case DirectionRight:
+        p->draw->rotAngle += glm_rad(1.5);
+        break;
+    case DirectionUp:
+        if ((p->draw->pos[1] + (incPos + (p->draw->rectSize[1] / 2) * h)) <= h)
+            p->draw->pos[1] += incPos;
+        break;
+    case DirectionDown:
+        if ((p->draw->pos[1] - (incPos + (p->draw->rectSize[1] / 2) * h)) >= -h)
+            p->draw->pos[1] -= incPos;
+        break;
+        break;
+    }
+}
+
+void PaddleSetInitialPosition(struct Paddle *p, float x, float y)
+{
+    glm_vec4((vec3){x, y, 0}, 1.0f, p->draw->pos);
 }
 
 void PaddleDelete(struct Paddle *p)

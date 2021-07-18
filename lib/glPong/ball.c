@@ -119,6 +119,12 @@ void BallDraw(struct Ball *b)
         glUniform1f(loc, glfwGetTime());
     }
 
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uResolution");
+    if (loc != -1)
+    {
+        glUniform2f(loc, b->draw->uResolution[0], b->draw->uResolution[1]);
+    }
+
     // bind VAO and draw elements and after that unbind
     cgl_vao_bind(&b->draw->vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

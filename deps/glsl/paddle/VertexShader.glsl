@@ -2,6 +2,10 @@
 
 layout (location = 0) in vec2 iPos;
 
+uniform mat4 uTranslation;
+uniform mat4 uRotation;
+uniform mat4 uScaling;
+
 void main() {
-    gl_Position = vec4(iPos, 0.0f, 1.0f);
+    gl_Position = uTranslation * uScaling * uRotation * vec4(iPos * 0.5, 0, 1);
 }
