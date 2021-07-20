@@ -20,7 +20,7 @@ void main()
 {
 	vec2 uv = gl_FragCoord.xy;
 	vec2 center = uResolution * 0.5;
-	float radius = 0.007 * uResolution.y;
+	float radius = 0.01 * uResolution.y;
 
     outColor = circle(uv, center, radius);
 }

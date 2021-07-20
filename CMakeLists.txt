@@ -6,6 +6,7 @@ include_directories(
     "deps/libs/cglm/include/"
     "deps/libs/Nuklear/"
     "deps/libs/cgl/lib/"
+    "deps/libs/stb/"
 )
 
 link_directories(
