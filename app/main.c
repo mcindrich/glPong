@@ -8,6 +8,10 @@
 #include <GLFW/glfw3.h>
 #include <glPong.h>
 
+// stb_image
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 // nuklear
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -71,13 +75,14 @@ static void modifyPaddle(struct GameContext *gc, struct Paddle *p);
 int main()
 {
     GLFWwindow *window = NULL;
-
+    GLFWimage winIcon;
     GLint glewStatus = 0;
     struct GameContext ctx;
     struct nk_context nkCtx;
 
     int err = 0;
     int wWidth, wHeight;
+    int nrChannelsIcon;
 
     // init window
     glfwInit();
@@ -86,10 +91,18 @@ int main()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    // load icon first
+    winIcon.pixels = stbi_load("deps/img/icon/icon.png", &winIcon.width, &winIcon.height, &nrChannelsIcon, 0);
+    if (winIcon.pixels == NULL)
+    {
+        LogError("unable to load window icon");
+        glfwTerminate();
+        return -1;
+    }
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glPong", NULL, NULL);
     if (!window)
     {
-        LogError("Unable to create a GLFW window... exiting");
+        LogError("unable to create a GLFW window... exiting");
         glfwTerminate();
         return -1;
     }
@@ -101,13 +114,14 @@ int main()
 
     if (glewStatus != GLEW_OK)
     {
-        LogError("Unable to init GLEW... exiting");
+        LogError("unable to init GLEW... exiting");
         glfwTerminate();
         return -1;
     }
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCB);
+    glfwSetWindowIcon(window, 1, &winIcon);
 
     // init game context
     GameContextInit(&ctx, window);
@@ -122,19 +136,19 @@ int main()
     err = PaddleLoadResources(ctx.lPaddle);
     if (err)
     {
-        LogError("Unable to load left paddle resources...");
+        LogError("unable to load left paddle resources...");
         goto error_out;
     }
     err = PaddleLoadResources(ctx.rPaddle);
     if (err)
     {
-        LogError("Unable to load right paddle resources...");
+        LogError("unable to load right paddle resources...");
         goto error_out;
     }
     err = BallLoadResources(ctx.ball);
     if (err)
     {
-        LogError("Unable to load ball resources...");
+        LogError("unable to load ball resources...");
         goto error_out;
     }
 
@@ -174,8 +188,11 @@ int main()
 
 error_out:
     GameContextDelete(&ctx);
-
     glfwTerminate();
+    if (winIcon.pixels)
+    {
+        free(winIcon.pixels);
+    }
     return 0;
 }
 
