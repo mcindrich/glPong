@@ -284,20 +284,12 @@ static void GameMenuSetup(struct GameMenu *menu)
     nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 1)));
 
     /* Config GUI */
-    if (nk_begin(ctx, "Main Menu", nk_rect(WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 - 100, 200, 200),
+    if (nk_begin(ctx, "Main Menu", nk_rect((float)WINDOW_WIDTH / 2 - 100, (float)WINDOW_HEIGHT / 2 - 100, 200, 200),
                  NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
-        enum
-        {
-            EASY,
-            HARD
-        };
-        static int op = EASY;
-        static int property = 20;
-
         nk_layout_row_static(ctx, 30, 200, 1);
         nk_label(ctx, "glPong", NK_TEXT_CENTERED);
-        // nk_layout_row_static(ctx, 30, 200, 2);
+
         nk_layout_row_dynamic(ctx, 20, 1);
         if (nk_button_label(ctx, "New Game"))
         {
