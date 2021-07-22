@@ -12,8 +12,8 @@
 #include <stb_image.h>
 
 // window #def's
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 700
 
 // helpers
 static void framebufferSizeCB(GLFWwindow *window, int w, int h);

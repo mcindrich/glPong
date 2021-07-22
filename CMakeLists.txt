@@ -7,6 +7,7 @@ include_directories(
     "deps/libs/Nuklear/"
     "deps/libs/cgl/lib/"
     "deps/libs/stb/"
+    "deps/libs/cJSON/"
 )
 
 link_directories(
@@ -23,6 +24,7 @@ set(
     "src/glPong/drawable.c"
     "src/glPong/game/menu.c"
     "src/glPong/game/context.c"
+    "deps/libs/cJSON/cJSON.c"
 )
 
 find_package(GLEW REQUIRED)

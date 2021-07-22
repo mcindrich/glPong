@@ -143,7 +143,7 @@ void BallDraw(struct Ball *b)
 
     glm_translate(draw->uTranslation, (vec3){draw->pos[0] / w, draw->pos[1] / h, 0});
     glm_rotate(draw->uRotation, draw->rotAngle, (vec3){0, 0, 1});
-    glm_scale(draw->uScaling, (vec3){draw->rectSize[0], draw->rectSize[1], 0});
+    glm_scale(draw->uScaling, (vec3){draw->rectSize[0] / w, draw->rectSize[1] / h, 0});
 
     // configure uniforms...
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uTime");
@@ -162,6 +162,12 @@ void BallDraw(struct Ball *b)
     if (loc != -1)
     {
         glUniform2f(loc, draw->pos[0], draw->pos[1]);
+    }
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uRectSize");
+    if (loc != -1)
+    {
+        glUniform2f(loc, draw->rectSize[0], draw->rectSize[1]);
     }
 
     // uniform matrices
