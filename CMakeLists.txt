@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(glPong C)
 
 include_directories(
-    "lib"
+    "src"
     "deps/libs/cglm/include/"
     "deps/libs/Nuklear/"
     "deps/libs/cgl/lib/"
@@ -13,17 +13,16 @@ link_directories(
     "deps/libs/cglm/build/"
     "deps/libs/cgl/build/"
 )
-
-set(
-    LIB_SOURCES
-    "lib/glPong/ball.c"
-    "lib/glPong/paddle.c"
-    "lib/glPong/drawable.c"
-) 
+     
 
 set(
     SOURCES
-    "app/main.c"
+    "src/main.c"
+    "src/glPong/ball.c"
+    "src/glPong/paddle.c"
+    "src/glPong/drawable.c"
+    "src/glPong/game/menu.c"
+    "src/glPong/game/context.c"
 )
 
 find_package(GLEW REQUIRED)
@@ -32,7 +31,6 @@ find_package(glfw3 CONFIG REQUIRED)
 add_executable(
     ${CMAKE_PROJECT_NAME}
     ${SOURCES}
-    ${LIB_SOURCES}
 )
 
 target_link_libraries(

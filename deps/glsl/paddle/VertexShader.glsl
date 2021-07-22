@@ -7,5 +7,5 @@ uniform mat4 uRotation;
 uniform mat4 uScaling;
 
 void main() {
-    gl_Position = uTranslation * uScaling * uRotation * vec4(iPos * 0.5, 0, 1);
+    gl_Position = uTranslation * uScaling * uRotation * vec4(iPos, 0, 1);
 }

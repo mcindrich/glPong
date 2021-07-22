@@ -2,6 +2,7 @@
 
 uniform vec2 uResolution;
 uniform float uTime;
+uniform vec2 uRectPos;
 
 out vec4 outColor;
 
@@ -13,14 +14,14 @@ vec4 circle(vec2 pos, vec2 center, float radius) {
     if(length(pos - center) < radius) {
         return vec4(rgb(vec3(225.0, 97.0, 60)), 1);
     }
-    return vec4(0);
+    return vec4(1);
 }
 
 void main()
 {
 	vec2 uv = gl_FragCoord.xy;
 	vec2 center = uResolution * 0.5;
-	float radius = 0.01 * uResolution.y;
+	float radius = 8;
 
-    outColor = circle(uv, center, radius);
+    outColor = circle(uv, uRectPos / 2 + center, radius);
 }

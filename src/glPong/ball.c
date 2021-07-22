@@ -1,5 +1,8 @@
 #include "cgl/object.h"
 #include "cgl/vao.h"
+#include "cglm/mat4.h"
+#include "cglm/vec2.h"
+#include "glPong/direction.h"
 #include <glPong/ball.h>
 #include <glPong/log.h>
 #include <stdlib.h>
@@ -21,6 +24,10 @@ struct Ball *BallNew()
         free(b);
         b = NULL;
     }
+
+    b->direction = DirectionNone;
+    b->radius = 0;
+    glm_vec2_copy((vec2){0, 0}, b->dirUnitVec);
 
     return b;
 }
@@ -107,10 +114,36 @@ int BallLoadResources(struct Ball *b)
 
 void BallDraw(struct Ball *b)
 {
-    struct cgl_shader_program *prog = &b->draw->prog;
+    struct Drawable *draw = b->draw;
+    struct cgl_shader_program *prog = &draw->prog;
     int loc = -1;
+    const unsigned int w = draw->uResolution[0];
+    const unsigned int h = draw->uResolution[1];
+
     // use shader before configuring uniforms
     cgl_shader_program_use(prog);
+
+    if (b->direction == DirectionLeft && draw->speed > 0)
+    {
+        // going left -> negative
+        draw->speed *= -1;
+    }
+
+    // draw->pos[0] += b->dirUnitVec[0] * draw->speed * draw->uResolution[0];
+    // draw->pos[1] += b->dirUnitVec[1] * draw->speed * draw->uResolution[1];
+
+    // draw->pos[0] += b->dirUnitVec[0] * draw->speed * draw->uResolution[0] * 0.5;
+    // draw->pos[1] += b->dirUnitVec[1] * draw->speed * draw->uResolution[1] * 0.5;
+
+    // LogDebug("(x, y) = (%f, %f)", draw->pos[0], draw->pos[1]);
+
+    glm_mat4_identity(draw->uTranslation);
+    glm_mat4_identity(draw->uScaling);
+    glm_mat4_identity(draw->uRotation);
+
+    glm_translate(draw->uTranslation, (vec3){draw->pos[0] / w, draw->pos[1] / h, 0});
+    glm_rotate(draw->uRotation, draw->rotAngle, (vec3){0, 0, 1});
+    glm_scale(draw->uScaling, (vec3){draw->rectSize[0], draw->rectSize[1], 0});
 
     // configure uniforms...
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uTime");
@@ -122,7 +155,32 @@ void BallDraw(struct Ball *b)
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uResolution");
     if (loc != -1)
     {
-        glUniform2f(loc, b->draw->uResolution[0], b->draw->uResolution[1]);
+        glUniform2f(loc, draw->uResolution[0], draw->uResolution[1]);
+    }
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uRectPos");
+    if (loc != -1)
+    {
+        glUniform2f(loc, draw->pos[0], draw->pos[1]);
+    }
+
+    // uniform matrices
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uTranslation");
+    if (loc != -1)
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, (float *)draw->uTranslation);
+    }
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uRotation");
+    if (loc != -1)
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, (float *)draw->uRotation);
+    }
+
+    loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uScaling");
+    if (loc != -1)
+    {
+        glUniformMatrix4fv(loc, 1, GL_FALSE, (float *)draw->uScaling);
     }
 
     // bind VAO and draw elements and after that unbind
@@ -134,5 +192,5 @@ void BallDraw(struct Ball *b)
 void BallDelete(struct Ball *b)
 {
     DrawableDelete(b->draw);
-    free(b);
+    free(b->draw);
 }

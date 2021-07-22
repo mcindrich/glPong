@@ -116,11 +116,11 @@ int PaddleLoadResources(struct Paddle *p)
     return err;
 }
 
-void PaddleDraw(struct Paddle *p, int neg_pos)
+void PaddleDraw(struct Paddle *p, enum Direction side)
 {
     int loc = -1;
-    struct cgl_shader_program *prog = &p->draw->prog;
     struct Drawable *draw = p->draw;
+    struct cgl_shader_program *prog = &draw->prog;
     const int w = draw->uResolution[0];
     const int h = draw->uResolution[1];
 
@@ -128,25 +128,21 @@ void PaddleDraw(struct Paddle *p, int neg_pos)
     cgl_shader_program_use(prog);
 
     // configure uniforms...
-    // configure matrices
     glm_mat4_identity(draw->uTranslation);
     glm_mat4_identity(draw->uScaling);
     glm_mat4_identity(draw->uRotation);
 
-    if (neg_pos)
+    draw->pos[0] = ((float)w - (float)w / 20);
+    if (side == DirectionLeft)
     {
-        draw->pos[0] = -((float)w - (float)w / 20);
-    }
-    else
-    {
-        draw->pos[0] = ((float)w - (float)w / 20);
+        draw->pos[0] *= -1;
     }
 
-    // LogDebug("translating by (%f, %f)", draw->pos[0] / w, draw->pos[1] / h);
+    LogDebug("scaling %f %f", draw->rectSize[0] / w, draw->rectSize[1] / h);
+
     glm_translate(draw->uTranslation, (vec3){draw->pos[0] / w, draw->pos[1] / h, 0});
     glm_rotate(draw->uRotation, draw->rotAngle, (vec3){0, 0, 1});
-    glm_scale(draw->uScaling, (vec3){draw->rectSize[0], draw->rectSize[1], 0});
-    // glm_ortho(0, w, 0, h, .1f, 100, draw->projectionMatrix);
+    glm_scale(draw->uScaling, (vec3){draw->rectSize[0] / w, draw->rectSize[1] / h, 0});
 
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uTranslation");
     if (loc != -1)
@@ -177,24 +173,25 @@ void PaddleMove(struct Paddle *p, enum Direction dir)
     const int h = p->draw->uResolution[1];
     const float incPos = p->draw->speed * h;
 
+    LogDebug("pos = %f %f", p->draw->pos[0], p->draw->pos[1]);
+
     switch (dir)
     {
     case DirectionNone:
         break;
     case DirectionLeft:
-        p->draw->rotAngle -= glm_rad(1.5);
+        p->draw->rotAngle -= glm_rad(2);
         break;
     case DirectionRight:
-        p->draw->rotAngle += glm_rad(1.5);
+        p->draw->rotAngle += glm_rad(2);
         break;
     case DirectionUp:
-        if ((p->draw->pos[1] + (incPos + (p->draw->rectSize[1] / 2) * h)) <= h)
+        if ((p->draw->pos[1] + (((p->draw->rectSize[1] / h) / 2) * h)) <= h)
             p->draw->pos[1] += incPos;
         break;
     case DirectionDown:
-        if ((p->draw->pos[1] - (incPos + (p->draw->rectSize[1] / 2) * h)) >= -h)
+        if ((p->draw->pos[1] - (((p->draw->rectSize[1] / h) / 2) * h)) >= -h)
             p->draw->pos[1] -= incPos;
-        break;
         break;
     }
 }
@@ -207,5 +204,5 @@ void PaddleSetInitialPosition(struct Paddle *p, float x, float y)
 void PaddleDelete(struct Paddle *p)
 {
     DrawableDelete(p->draw);
-    free(p);
+    free(p->draw);
 }

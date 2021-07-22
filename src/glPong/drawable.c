@@ -55,7 +55,5 @@ void DrawableDelete(struct Drawable *d)
         cgl_shader_delete(&d->vShader);
         cgl_shader_delete(&d->fShader);
         cgl_shader_program_delete(&d->prog);
-
-        free(d);
     }
 }
