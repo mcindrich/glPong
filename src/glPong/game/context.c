@@ -1,9 +1,12 @@
+#include "cglm/vec2.h"
+#include "glPong/game/menu.h"
 #include "glPong/game/state.h"
 #include "glPong/paddle.h"
 #include <glPong/game/context.h>
 #include <cJSON.h>
 
 static char *readFile(const char *path);
+static void setDefaults(struct GameContext *gc);
 
 void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr)
 {
@@ -17,13 +20,7 @@ void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr)
     gc->winPtr = winPtr;
     gc->state = GameStatePlaying;
 
-    // load defaults first
-    DrawableSetSpeed(gc->lPaddle->draw, 0.03);
-    DrawableSetSpeed(gc->rPaddle->draw, 0.03);
-    DrawableSetSpeed(gc->ball->draw, 0.03);
-    DrawableSetRectSize(gc->lPaddle->draw, (vec2){20, 70});
-    DrawableSetRectSize(gc->rPaddle->draw, (vec2){20, 70});
-    DrawableSetRectSize(gc->ball->draw, (vec2){50, 50});
+    setDefaults(gc);
 
     // load json config and init data from it
     cfgData = readFile("data/config.json");
@@ -75,6 +72,22 @@ void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr)
     GameMenuInit(&gc->menu);
 }
 
+void GameContextLoadMenu(struct GameContext *gc)
+{
+    GameMenuLoad(&gc->menu, gc->winPtr);
+    gc->state = GameStateMenu;
+}
+
+void GameContextGameOver(struct GameContext *gc)
+{
+    GameMenuDelete(&gc->menu);
+    GameMenuLoad(&gc->menu, gc->winPtr);
+    setDefaults(gc);
+    DrawableSetDefaults(gc->ball->draw);
+    DrawableSetDefaults(gc->lPaddle->draw);
+    DrawableSetDefaults(gc->rPaddle->draw);
+}
+
 void GameContextDelete(struct GameContext *gc)
 {
     PaddleDelete(gc->lPaddle);
@@ -107,4 +120,15 @@ static char *readFile(const char *path)
     }
 
     return buffer;
+}
+
+static void setDefaults(struct GameContext *gc)
+{
+    // load defaults first
+    DrawableSetSpeed(gc->lPaddle->draw, 0.03);
+    DrawableSetSpeed(gc->rPaddle->draw, 0.03);
+    DrawableSetSpeed(gc->ball->draw, 0.01);
+    DrawableSetRectSize(gc->lPaddle->draw, (vec2){20, 70});
+    DrawableSetRectSize(gc->rPaddle->draw, (vec2){20, 70});
+    DrawableSetRectSize(gc->ball->draw, (vec2){20, 20});
 }

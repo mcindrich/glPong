@@ -1,5 +1,6 @@
 #include "cgl/object.h"
 #include "cgl/vao.h"
+#include "cglm/affine.h"
 #include "cglm/mat4.h"
 #include "cglm/vec2.h"
 #include "glPong/direction.h"
@@ -7,6 +8,8 @@
 #include <glPong/log.h>
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
+
+#define rand_between(min, max) ((min) + (max - min) * ((float)rand() / (float)RAND_MAX))
 
 struct Ball *BallNew()
 {
@@ -112,6 +115,125 @@ int BallLoadResources(struct Ball *b)
     return err;
 }
 
+int BallCheckWallCollision(struct Ball *b)
+{
+    const int w = b->draw->uResolution[0], h = b->draw->uResolution[1];
+    vec2 left = {-w, 0}, right = {w, 0}, up = {0, h}, down = {0, -h};
+    vec2 pos;
+
+    glm_vec2_copy(b->draw->pos, pos);
+
+    const float distLeft = fabs(-w - pos[0]);
+    const float distRight = fabs(w - pos[0]);
+    const float distUp = fabs(h - pos[1]);
+    const float distDown = fabs(-h - pos[1]);
+    const float rectW = b->draw->rectSize[0], rectH = b->draw->rectSize[1];
+    const float rectLen = sqrt(pow(rectW, 2) + pow(rectH, 2));
+
+    const float speed = b->draw->speed;
+
+    LogDebug("left, right = %f, %f", distLeft, distRight);
+
+    if (distLeft < rectLen)
+    {
+        // end game -> right wins
+        LogDebug("end game -> right wins");
+        return 1;
+    }
+    else if (distRight < rectLen)
+    {
+        // end game -> left wins
+        LogDebug("end game -> left wins");
+        return 1;
+    }
+    else if (distUp < rectLen)
+    {
+        b->dirUnitVec[0] *= 1;
+        b->dirUnitVec[1] *= -1;
+    }
+    else if (distDown < rectLen)
+    {
+        b->dirUnitVec[0] *= 1;
+        b->dirUnitVec[1] *= -1;
+    }
+    return 0;
+}
+
+void BallCheckPaddleCollision(struct Ball *b, struct Paddle *p)
+{
+    vec2 upper, lower, middle;
+    mat4 rotMat;
+    vec4 tmp = {0};
+
+    const float third = p->draw->rectSize[1] / 3;
+
+    glm_vec2_copy(p->draw->pos, middle);
+    glm_vec2((vec2){p->draw->pos[0], p->draw->pos[1] + third}, upper);
+    glm_vec2((vec2){p->draw->pos[0], p->draw->pos[1] - third}, lower);
+
+    const float distMiddle = glm_vec2_distance(b->draw->pos, middle);
+    const float distUpper = glm_vec2_distance(b->draw->pos, upper);
+    const float distLower = glm_vec2_distance(b->draw->pos, lower);
+    const float rectW = b->draw->rectSize[0], rectH = b->draw->rectSize[1];
+    const float rectLen = sqrt(pow(rectW, 2) + pow(rectH, 2)) * 2;
+
+    glm_mat4_identity(rotMat);
+
+    if (distMiddle < rectLen)
+    {
+        // ball collides with the middle of the paddle -> move ball straight
+        LogDebug("ball hit middle");
+        if (b->draw->speed < 0)
+        {
+            b->direction = DirectionRight;
+        }
+        else
+        {
+            b->direction = DirectionLeft;
+        }
+        glm_vec2_copy((vec2){1, 0}, b->dirUnitVec);
+        b->draw->speed *= -1;
+    }
+    else if (distUpper < rectLen)
+    {
+        LogDebug("ball hit upper");
+        // ball collides with the upper part of the paddle -> move ball down with rand() angle
+        if (b->draw->speed < 0)
+        {
+            b->direction = DirectionRight;
+            glm_rotate(rotMat, -glm_rad(rand_between(20, 70)), (vec3){0, 0, 1});
+        }
+        else
+        {
+            b->direction = DirectionLeft;
+            glm_rotate(rotMat, glm_rad(rand_between(20, 70)), (vec3){0, 0, 1});
+        }
+        glm_vec2_copy((vec2){1, 0}, tmp);
+        glm_mat4_mulv(rotMat, tmp, tmp);
+        glm_vec2_copy(tmp, b->dirUnitVec);
+        b->draw->speed *= -1;
+    }
+    else if (distLower < rectLen)
+    {
+        LogDebug("ball hit lower");
+        // ball collides with the lower part of the paddle -> move ball up with rand() angle
+        if (b->draw->speed < 0)
+        {
+            b->direction = DirectionRight;
+            glm_rotate(rotMat, glm_rad(rand_between(20, 70)), (vec3){0, 0, 1});
+        }
+        else
+        {
+            b->direction = DirectionLeft;
+            glm_rotate(rotMat, -glm_rad(rand_between(20, 70)), (vec3){0, 0, 1});
+        }
+        glm_vec2_copy((vec2){1, 0}, tmp);
+        glm_mat4_mulv(rotMat, tmp, tmp);
+        glm_vec2_copy(tmp, b->dirUnitVec);
+        b->draw->speed *= -1;
+    }
+}
+
 void BallDraw(struct Ball *b)
 {
     struct Drawable *draw = b->draw;
@@ -129,11 +251,12 @@ void BallDraw(struct Ball *b)
         draw->speed *= -1;
     }
 
-    // draw->pos[0] += b->dirUnitVec[0] * draw->speed * draw->uResolution[0];
-    // draw->pos[1] += b->dirUnitVec[1] * draw->speed * draw->uResolution[1];
+    LogDebug("speed = %f", draw->speed);
+    LogDebug("unitVec = %f, %f", b->dirUnitVec[0], b->dirUnitVec[1]);
 
-    // draw->pos[0] += b->dirUnitVec[0] * draw->speed * draw->uResolution[0] * 0.5;
-    // draw->pos[1] += b->dirUnitVec[1] * draw->speed * draw->uResolution[1] * 0.5;
+    draw->pos[0] += b->dirUnitVec[0] * draw->speed * draw->uResolution[0];
+    draw->pos[1] += b->dirUnitVec[1] * draw->speed * draw->uResolution[1];
+    // draw->pos[1] = 70;
 
     // LogDebug("(x, y) = (%f, %f)", draw->pos[0], draw->pos[1]);
 
@@ -155,19 +278,19 @@ void BallDraw(struct Ball *b)
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uResolution");
     if (loc != -1)
     {
-        glUniform2f(loc, draw->uResolution[0], draw->uResolution[1]);
+        glUniform2fv(loc, 1, draw->uResolution);
     }
 
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uRectPos");
     if (loc != -1)
     {
-        glUniform2f(loc, draw->pos[0], draw->pos[1]);
+        glUniform2fv(loc, 1, draw->pos);
     }
 
     loc = glGetUniformLocation(cgl_object_get_ID((struct cgl_object *)prog), "uRectSize");
     if (loc != -1)
     {
-        glUniform2f(loc, draw->rectSize[0], draw->rectSize[1]);
+        glUniform2fv(loc, 1, draw->rectSize);
     }
 
     // uniform matrices

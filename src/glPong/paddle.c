@@ -171,7 +171,7 @@ void PaddleMove(struct Paddle *p, enum Direction dir)
     const int h = p->draw->uResolution[1];
     const float incPos = p->draw->speed * h;
 
-    LogDebug("pos = %f %f", p->draw->pos[0], p->draw->pos[1]);
+    // LogDebug("pos = %f %f", p->draw->pos[0], p->draw->pos[1]);
 
     switch (dir)
     {

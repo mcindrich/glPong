@@ -10,6 +10,7 @@ struct GameMenu
     struct nk_glfw *glfw;
     struct nk_context *ctx;
     struct nk_colorf *bg;
+    int initialized;
 };
 
 void GameMenuInit(struct GameMenu *menu);

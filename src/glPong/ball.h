@@ -1,7 +1,7 @@
 #ifndef glPong_BALL_H
 #define glPong_BALL_H
 
-#include "glPong/direction.h"
+#include <glPong/paddle.h>
 #include <glPong/drawable.h>
 #include <stdint.h>
 
@@ -15,6 +15,9 @@ struct Ball
 
 struct Ball *BallNew();
 int BallLoadResources(struct Ball *b);
+// functions for checking collision - if collision occurs, functions change vectors and directions of the ball
+int BallCheckWallCollision(struct Ball *b);
+void BallCheckPaddleCollision(struct Ball *b, struct Paddle *p);
 void BallDraw(struct Ball *b);
 void BallDelete(struct Ball *b);
 

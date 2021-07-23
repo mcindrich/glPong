@@ -1,4 +1,6 @@
+#include "glPong/ball.h"
 #include "glPong/direction.h"
+#include "glPong/game/state.h"
 #include <stdio.h>
 #include <glPong/game/context.h>
 #include <glPong/game/menu.h>
@@ -95,6 +97,10 @@ int main()
     /* Intializes random number generator */
     srand(time(NULL));
 
+    GameContextLoadMenu(&ctx);
+
+    int over = 0;
+
     // all resources loaded normally -> start drawing the window and the game
     while (!glfwWindowShouldClose(window))
     {
@@ -115,20 +121,36 @@ int main()
         }
         else if (ctx.state == GameStatePlaying)
         {
-            // if (ctx.ball->direction == DirectionNone)
-            // {
-            //     ctx.ball->direction = (rand() % 2 == 0) ? DirectionLeft : DirectionRight;
-            //     const enum Direction dir = ctx.ball->direction;
-            //     glm_vec2_copy((vec2){1, 0}, ctx.ball->dirUnitVec);
-            // }
+            if (ctx.ball->direction == DirectionNone)
+            {
+                ctx.ball->direction = (rand() % 2 == 0) ? DirectionLeft : DirectionRight;
+                const enum Direction dir = ctx.ball->direction;
+                glm_vec2_copy((vec2){1, 0}, ctx.ball->dirUnitVec);
+            }
             // set resolution for all drawables
             glm_vec2((vec2){wWidth, wHeight}, ctx.lPaddle->draw->uResolution);
             glm_vec2((vec2){wWidth, wHeight}, ctx.rPaddle->draw->uResolution);
             glm_vec2((vec2){wWidth, wHeight}, ctx.ball->draw->uResolution);
 
+            if (ctx.ball->draw->speed < 0)
+            {
+                BallCheckPaddleCollision(ctx.ball, ctx.lPaddle);
+            }
+            else
+            {
+                BallCheckPaddleCollision(ctx.ball, ctx.rPaddle);
+            }
+            over = BallCheckWallCollision(ctx.ball);
+            if (over)
+            {
+                ctx.state = GameStateMenu;
+                GameContextGameOver(&ctx);
+            }
+
+            // draw objects
+            BallDraw(ctx.ball);
             PaddleDraw(ctx.lPaddle, DirectionLeft);
             PaddleDraw(ctx.rPaddle, DirectionRight);
-            BallDraw(ctx.ball);
         }
 
         glfwSwapBuffers(window);

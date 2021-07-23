@@ -15,7 +15,6 @@ struct Drawable
     struct cgl_shader_program prog;
 
     vec4 pos;
-    vec4 prevPos;
 
     mat4 uTranslation;
     mat4 uRotation;
@@ -31,6 +30,7 @@ struct Drawable
 
 struct Drawable *DrawableNew();
 void DrawableSetSpeed(struct Drawable *d, float s);
+void DrawableSetDefaults(struct Drawable *d);
 void DrawableSetRectSize(struct Drawable *d, vec2 s);
 void DrawableDelete(struct Drawable *d);
 

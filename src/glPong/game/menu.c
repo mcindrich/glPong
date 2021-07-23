@@ -23,6 +23,7 @@ void GameMenuInit(struct GameMenu *menu)
     menu->glfw = NULL;
     menu->bg = NULL;
     menu->ctx = NULL;
+    menu->initialized = 0;
 }
 
 void GameMenuLoad(struct GameMenu *menu, GLFWwindow *win)
@@ -32,10 +33,12 @@ void GameMenuLoad(struct GameMenu *menu, GLFWwindow *win)
     menu->glfw = malloc(sizeof(struct nk_glfw));
     menu->bg = malloc(sizeof(struct nk_colorf));
 
-    menu->ctx = nk_glfw3_init(menu->glfw, win, NK_GLFW3_INSTALL_CALLBACKS);
+    menu->ctx = nk_glfw3_init(menu->glfw, win, NK_GLFW3_DEFAULT);
     nk_glfw3_font_stash_begin(menu->glfw, &atlas);
     nk_glfw3_font_stash_end(menu->glfw);
     *menu->bg = (struct nk_colorf){0};
+
+    menu->initialized = 1;
 }
 
 void GameMenuSetup(struct GameMenu *menu, enum GameState *state, unsigned int w, unsigned int h)
@@ -63,6 +66,7 @@ void GameMenuSetup(struct GameMenu *menu, enum GameState *state, unsigned int w,
         }
         if (nk_button_label(ctx, "Exit"))
         {
+            glfwSetWindowShouldClose(menu->glfw->win, 1);
         }
     }
     nk_end(ctx);
@@ -83,4 +87,5 @@ void GameMenuDelete(struct GameMenu *menu)
     }
     free(menu->glfw);
     free(menu->bg);
+    GameMenuInit(menu);
 }

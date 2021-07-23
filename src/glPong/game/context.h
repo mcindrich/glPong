@@ -17,6 +17,8 @@ struct GameContext
 
 // GameContext
 void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr);
+void GameContextLoadMenu(struct GameContext *gc);
+void GameContextGameOver(struct GameContext *gc);
 void GameContextDelete(struct GameContext *gc);
 
 #endif // glPong_GAME_CONTEXT_H

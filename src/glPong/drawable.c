@@ -26,7 +26,6 @@ struct Drawable *DrawableNew()
     cgl_shader_program_init(&d->prog);
 
     glm_vec4((vec3){0, 0, 0}, 0, d->pos);
-    glm_vec4((vec3){0, 0, 0}, 0, d->prevPos);
 
     d->speed = 0;
     d->rotAngle = 0;
@@ -37,6 +36,11 @@ struct Drawable *DrawableNew()
 void DrawableSetSpeed(struct Drawable *d, float s)
 {
     d->speed = s;
+}
+
+void DrawableSetDefaults(struct Drawable *d)
+{
+    glm_vec4((vec3){0, 0, 0}, 0, d->pos);
 }
 
 void DrawableSetRectSize(struct Drawable *d, vec2 s)
