@@ -14,11 +14,11 @@
 #include <stdlib.h>
 #include <glPong/log.h>
 
-struct Paddle *PaddleNew()
+Paddle *PaddleNew()
 {
-    struct Paddle *p = NULL;
+    Paddle *p = NULL;
 
-    p = (struct Paddle *)malloc(sizeof(struct Paddle));
+    p = (Paddle *)malloc(sizeof(Paddle));
     if (!p)
     {
         return NULL;
@@ -34,7 +34,7 @@ struct Paddle *PaddleNew()
     return p;
 }
 
-int PaddleLoadResources(struct Paddle *p)
+int PaddleLoadResources(Paddle *p)
 {
     int err = 0;
 
@@ -116,10 +116,10 @@ int PaddleLoadResources(struct Paddle *p)
     return err;
 }
 
-void PaddleDraw(struct Paddle *p, enum Direction side)
+void PaddleDraw(Paddle *p, Direction side)
 {
     int loc = -1;
-    struct Drawable *draw = p->draw;
+    Drawable *draw = p->draw;
     struct cgl_shader_program *prog = &draw->prog;
     const int w = draw->uResolution[0];
     const int h = draw->uResolution[1];
@@ -165,7 +165,7 @@ void PaddleDraw(struct Paddle *p, enum Direction side)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void PaddleMove(struct Paddle *p, enum Direction dir)
+void PaddleMove(Paddle *p, Direction dir)
 {
     const int w = p->draw->uResolution[0];
     const int h = p->draw->uResolution[1];
@@ -194,7 +194,7 @@ void PaddleMove(struct Paddle *p, enum Direction dir)
     }
 }
 
-void PaddleDelete(struct Paddle *p)
+void PaddleDelete(Paddle *p)
 {
     DrawableDelete(p->draw);
     free(p->draw);

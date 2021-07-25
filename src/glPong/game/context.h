@@ -5,20 +5,22 @@
 #include <glPong/paddle.h>
 #include <glPong/ball.h>
 
+typedef struct GameContext GameContext;
+
 struct GameContext
 {
-    struct Paddle *lPaddle;
-    struct Paddle *rPaddle;
-    struct Ball *ball;
-    struct GameMenu menu;
-    enum GameState state;
+    Paddle *lPaddle;
+    Paddle *rPaddle;
+    Ball *ball;
+    GameMenu menu;
+    GameState state;
     GLFWwindow *winPtr;
 };
 
 // GameContext
-void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr);
-void GameContextLoadMenu(struct GameContext *gc);
-void GameContextGameOver(struct GameContext *gc);
-void GameContextDelete(struct GameContext *gc);
+void GameContextInit(GameContext *gc, GLFWwindow *winPtr);
+void GameContextLoadMenu(GameContext *gc);
+void GameContextGameOver(GameContext *gc);
+void GameContextDelete(GameContext *gc);
 
 #endif // glPong_GAME_CONTEXT_H

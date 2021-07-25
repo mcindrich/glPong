@@ -10,4 +10,6 @@ enum Direction
     DirectionDown
 };
 
+typedef enum Direction Direction;
+
 #endif // glPong_DIRECTION_H

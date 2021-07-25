@@ -4,15 +4,17 @@
 #include <glPong/drawable.h>
 #include <glPong/direction.h>
 
+typedef struct Paddle Paddle;
+
 struct Paddle
 {
-    struct Drawable *draw;
+    Drawable *draw;
 };
 
-struct Paddle *PaddleNew();
-int PaddleLoadResources(struct Paddle *p);
-void PaddleDraw(struct Paddle *p, enum Direction side);
-void PaddleMove(struct Paddle *p, enum Direction up);
-void PaddleDelete(struct Paddle *p);
+Paddle *PaddleNew();
+int PaddleLoadResources(Paddle *p);
+void PaddleDraw(Paddle *p, Direction side);
+void PaddleMove(Paddle *p, Direction up);
+void PaddleDelete(Paddle *p);
 
 #endif // glPong_PADDLE_H

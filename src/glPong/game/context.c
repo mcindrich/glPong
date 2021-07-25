@@ -6,9 +6,9 @@
 #include <cJSON.h>
 
 static char *readFile(const char *path);
-static void setDefaults(struct GameContext *gc);
+static void setDefaults(GameContext *gc);
 
-void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr)
+void GameContextInit(GameContext *gc, GLFWwindow *winPtr)
 {
     // load paddles and a ball
     char *cfgData = NULL;
@@ -72,13 +72,13 @@ void GameContextInit(struct GameContext *gc, GLFWwindow *winPtr)
     GameMenuInit(&gc->menu);
 }
 
-void GameContextLoadMenu(struct GameContext *gc)
+void GameContextLoadMenu(GameContext *gc)
 {
     GameMenuLoad(&gc->menu, gc->winPtr);
     gc->state = GameStateMenu;
 }
 
-void GameContextGameOver(struct GameContext *gc)
+void GameContextGameOver(GameContext *gc)
 {
     GameMenuDelete(&gc->menu);
     GameMenuLoad(&gc->menu, gc->winPtr);
@@ -88,7 +88,7 @@ void GameContextGameOver(struct GameContext *gc)
     DrawableSetDefaults(gc->rPaddle->draw);
 }
 
-void GameContextDelete(struct GameContext *gc)
+void GameContextDelete(GameContext *gc)
 {
     PaddleDelete(gc->lPaddle);
     free(gc->lPaddle);
@@ -122,7 +122,7 @@ static char *readFile(const char *path)
     return buffer;
 }
 
-static void setDefaults(struct GameContext *gc)
+static void setDefaults(GameContext *gc)
 {
     // load defaults first
     DrawableSetSpeed(gc->lPaddle->draw, 0.03);

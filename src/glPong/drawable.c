@@ -5,11 +5,11 @@
 #include "cglm/vec2.h"
 #include <glPong/drawable.h>
 
-struct Drawable *DrawableNew()
+Drawable *DrawableNew()
 {
-    struct Drawable *d = NULL;
+    Drawable *d = NULL;
 
-    d = malloc(sizeof(struct Drawable));
+    d = malloc(sizeof(Drawable));
 
     if (!d)
     {
@@ -33,22 +33,22 @@ struct Drawable *DrawableNew()
     return d;
 }
 
-void DrawableSetSpeed(struct Drawable *d, float s)
+void DrawableSetSpeed(Drawable *d, float s)
 {
     d->speed = s;
 }
 
-void DrawableSetDefaults(struct Drawable *d)
+void DrawableSetDefaults(Drawable *d)
 {
     glm_vec4((vec3){0, 0, 0}, 0, d->pos);
 }
 
-void DrawableSetRectSize(struct Drawable *d, vec2 s)
+void DrawableSetRectSize(Drawable *d, vec2 s)
 {
     glm_vec2_copy(s, d->rectSize);
 }
 
-void DrawableDelete(struct Drawable *d)
+void DrawableDelete(Drawable *d)
 {
     if (d)
     {

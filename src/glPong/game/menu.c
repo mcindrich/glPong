@@ -18,7 +18,7 @@
 #include <nuklear.h>
 #include <glPong/nuklear_glfw3.h>
 
-void GameMenuInit(struct GameMenu *menu)
+void GameMenuInit(GameMenu *menu)
 {
     menu->glfw = NULL;
     menu->bg = NULL;
@@ -26,7 +26,7 @@ void GameMenuInit(struct GameMenu *menu)
     menu->initialized = 0;
 }
 
-void GameMenuLoad(struct GameMenu *menu, GLFWwindow *win)
+void GameMenuLoad(GameMenu *menu, GLFWwindow *win)
 {
     struct nk_font_atlas *atlas;
     // allocate needed structs
@@ -41,7 +41,7 @@ void GameMenuLoad(struct GameMenu *menu, GLFWwindow *win)
     menu->initialized = 1;
 }
 
-void GameMenuSetup(struct GameMenu *menu, enum GameState *state, unsigned int w, unsigned int h)
+void GameMenuSetup(GameMenu *menu, GameState *state, unsigned int w, unsigned int h)
 {
     struct nk_context *ctx = menu->ctx;
     struct nk_glfw *glfw = menu->glfw;
@@ -74,12 +74,12 @@ void GameMenuSetup(struct GameMenu *menu, enum GameState *state, unsigned int w,
     nk_style_pop_style_item(ctx);
 }
 
-void GameMenuRender(struct GameMenu *menu)
+void GameMenuRender(GameMenu *menu)
 {
     nk_glfw3_render(menu->glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
-void GameMenuDelete(struct GameMenu *menu)
+void GameMenuDelete(GameMenu *menu)
 {
     if (menu->glfw)
     {

@@ -11,11 +11,11 @@
 
 #define rand_between(min, max) ((min) + (max - min) * ((float)rand() / (float)RAND_MAX))
 
-struct Ball *BallNew()
+Ball *BallNew()
 {
-    struct Ball *b = NULL;
+    Ball *b = NULL;
 
-    b = malloc(sizeof(struct Ball));
+    b = malloc(sizeof(Ball));
     if (!b)
     {
         return b;
@@ -35,7 +35,7 @@ struct Ball *BallNew()
     return b;
 }
 
-int BallLoadResources(struct Ball *b)
+int BallLoadResources(Ball *b)
 {
     int err = 0;
 
@@ -115,7 +115,7 @@ int BallLoadResources(struct Ball *b)
     return err;
 }
 
-int BallCheckWallCollision(struct Ball *b)
+int BallCheckWallCollision(Ball *b)
 {
     const int w = b->draw->uResolution[0], h = b->draw->uResolution[1];
     vec2 left = {-w, 0}, right = {w, 0}, up = {0, h}, down = {0, -h};
@@ -159,7 +159,7 @@ int BallCheckWallCollision(struct Ball *b)
     return 0;
 }
 
-void BallCheckPaddleCollision(struct Ball *b, struct Paddle *p)
+void BallCheckPaddleCollision(Ball *b, Paddle *p)
 {
     vec2 upper, lower, middle;
     mat4 rotMat;
@@ -234,9 +234,9 @@ void BallCheckPaddleCollision(struct Ball *b, struct Paddle *p)
     }
 }
 
-void BallDraw(struct Ball *b)
+void BallDraw(Ball *b)
 {
-    struct Drawable *draw = b->draw;
+    Drawable *draw = b->draw;
     struct cgl_shader_program *prog = &draw->prog;
     int loc = -1;
     const unsigned int w = draw->uResolution[0];
@@ -318,7 +318,7 @@ void BallDraw(struct Ball *b)
     cgl_vao_unbind();
 }
 
-void BallDelete(struct Ball *b)
+void BallDelete(Ball *b)
 {
     DrawableDelete(b->draw);
     free(b->draw);

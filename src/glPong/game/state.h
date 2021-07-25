@@ -9,4 +9,6 @@ enum GameState
     GameStateOver,
 };
 
+typedef enum GameState GameState;
+
 #endif // glPong_GAME_STATE_H

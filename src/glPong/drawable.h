@@ -4,6 +4,8 @@
 #include <cgl.h>
 #include <cglm/cglm.h>
 
+typedef struct Drawable Drawable;
+
 struct Drawable
 {
     struct cgl_vbo vbo;
@@ -28,10 +30,10 @@ struct Drawable
     float rotAngle; // rotation angle
 };
 
-struct Drawable *DrawableNew();
-void DrawableSetSpeed(struct Drawable *d, float s);
-void DrawableSetDefaults(struct Drawable *d);
-void DrawableSetRectSize(struct Drawable *d, vec2 s);
-void DrawableDelete(struct Drawable *d);
+Drawable *DrawableNew();
+void DrawableSetSpeed(Drawable *d, float s);
+void DrawableSetDefaults(Drawable *d);
+void DrawableSetRectSize(Drawable *d, vec2 s);
+void DrawableDelete(Drawable *d);
 
 #endif // glPong_DRAWABLE_H

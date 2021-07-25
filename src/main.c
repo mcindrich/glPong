@@ -1,7 +1,6 @@
-#include "glPong/ball.h"
-#include "glPong/direction.h"
-#include "glPong/game/state.h"
-#include <stdio.h>
+#include <glPong/ball.h>
+#include <glPong/direction.h>
+#include <glPong/game/state.h>
 #include <glPong/game/context.h>
 #include <glPong/game/menu.h>
 #include <glPong/log.h>
@@ -13,20 +12,20 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-// window #def's
+// window #def's - starting width and height
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 700
 
 // helpers
 static void framebufferSizeCB(GLFWwindow *window, int w, int h);
-static void processInput(GLFWwindow *window, struct GameContext *ctx);
+static void processInput(GLFWwindow *window, GameContext *ctx);
 
 int main()
 {
     GLFWwindow *window = NULL;
     GLFWimage winIcon;
     GLint glewStatus = 0;
-    struct GameContext ctx;
+    GameContext ctx;
 
     int err = 0;
     int wWidth, wHeight;
@@ -124,7 +123,7 @@ int main()
             if (ctx.ball->direction == DirectionNone)
             {
                 ctx.ball->direction = (rand() % 2 == 0) ? DirectionLeft : DirectionRight;
-                const enum Direction dir = ctx.ball->direction;
+                const Direction dir = ctx.ball->direction;
                 glm_vec2_copy((vec2){1, 0}, ctx.ball->dirUnitVec);
             }
             // set resolution for all drawables
@@ -173,7 +172,7 @@ static void framebufferSizeCB(GLFWwindow *window, int w, int h)
     glViewport(0, 0, w, h);
 }
 
-static void processInput(GLFWwindow *window, struct GameContext *ctx)
+static void processInput(GLFWwindow *window, GameContext *ctx)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
