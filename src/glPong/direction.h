@@ -1,15 +1,13 @@
 #ifndef glPong_DIRECTION_H
 #define glPong_DIRECTION_H
 
-enum Direction
+typedef enum
 {
     DirectionNone = 0,
     DirectionLeft,
     DirectionRight,
     DirectionUp,
     DirectionDown
-};
-
-typedef enum Direction Direction;
+} Direction;
 
 #endif // glPong_DIRECTION_H

@@ -1,3 +1,4 @@
+#include "glPong/game/state.h"
 #include <glPong/game/menu.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -41,7 +42,8 @@ void GameMenuLoad(GameMenu *menu, GLFWwindow *win)
     menu->initialized = 1;
 }
 
-void GameMenuSetup(GameMenu *menu, GameState *state, unsigned int w, unsigned int h)
+void GameMenuSetup(GameMenu *menu, GameState *state, unsigned int w, unsigned int h, GameMode **modes,
+                   unsigned int modes_n, GameMode **chosen_mode)
 {
     struct nk_context *ctx = menu->ctx;
     struct nk_glfw *glfw = menu->glfw;
@@ -60,10 +62,20 @@ void GameMenuSetup(GameMenu *menu, GameState *state, unsigned int w, unsigned in
         nk_label(ctx, "glPong", NK_TEXT_CENTERED);
 
         nk_layout_row_dynamic(ctx, 20, 1);
-        if (nk_button_label(ctx, "New Game"))
+        for (int i = 0; i < modes_n; i++)
         {
-            *state = GameStatePlaying;
+            if (nk_button_label(ctx, modes[i]->name))
+            {
+                *chosen_mode = modes[i];
+                *state = GameStatePlaying;
+            }
         }
+
+        // nk_layout_row_dynamic(ctx, 20, 1);
+        // if (nk_button_label(ctx, "New Game"))
+        // {
+        //     *state = GameStatePlaying;
+        // }
         if (nk_button_label(ctx, "Exit"))
         {
             glfwSetWindowShouldClose(menu->glfw->win, 1);

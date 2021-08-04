@@ -14,24 +14,9 @@
 #include <stdlib.h>
 #include <glPong/log.h>
 
-Paddle *PaddleNew()
+void PaddleInit(Paddle *p)
 {
-    Paddle *p = NULL;
-
-    p = (Paddle *)malloc(sizeof(Paddle));
-    if (!p)
-    {
-        return NULL;
-    }
-
-    p->draw = DrawableNew();
-    if (!p->draw)
-    {
-        free(p);
-        p = NULL;
-    }
-
-    return p;
+    DrawableInit(&p->draw);
 }
 
 int PaddleLoadResources(Paddle *p)
@@ -52,29 +37,29 @@ int PaddleLoadResources(Paddle *p)
     };
 
     // vao
-    cgl_vao_gen(&p->draw->vao);
-    cgl_vao_bind(&p->draw->vao);
+    cgl_vao_gen(&p->draw.vao);
+    cgl_vao_bind(&p->draw.vao);
 
     // ebo
-    cgl_ebo_gen(&p->draw->ebo);
-    cgl_ebo_bind(&p->draw->ebo);
+    cgl_ebo_gen(&p->draw.ebo);
+    cgl_ebo_bind(&p->draw.ebo);
     cgl_buffer_data(cgl_buffer_kind_element, sizeof(indices), indices, cgl_draw_kind_static);
 
     // vbo
-    cgl_vbo_gen(&p->draw->vbo);
-    cgl_vbo_bind(&p->draw->vbo);
+    cgl_vbo_gen(&p->draw.vbo);
+    cgl_vbo_bind(&p->draw.vbo);
     cgl_buffer_data(cgl_buffer_kind_array, sizeof(vertices), vertices, cgl_draw_kind_static);
     cgl_vertex_attrib_configure(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
     cgl_vertex_attrib_enable(0);
 
     // configure shaders
-    err = cgl_shader_load_source(&p->draw->vShader, cgl_shader_kind_vertex, "deps/glsl/paddle/VertexShader.glsl");
+    err = cgl_shader_load_source(&p->draw.vShader, cgl_shader_kind_vertex, "deps/glsl/paddle/VertexShader.glsl");
     if (err)
     {
         LogError("error loading vertex shader source");
         return err;
     }
-    err = cgl_shader_load_source(&p->draw->fShader, cgl_shader_kind_fragment, "deps/glsl/paddle/FragmentShader.glsl");
+    err = cgl_shader_load_source(&p->draw.fShader, cgl_shader_kind_fragment, "deps/glsl/paddle/FragmentShader.glsl");
     if (err)
     {
         LogError("error loading fragment shader source");
@@ -83,8 +68,8 @@ int PaddleLoadResources(Paddle *p)
 
     char errbuffer[512];
     // compile shaders
-    err = cgl_shader_compile(&p->draw->vShader);
-    cgl_shader_compile_info(&p->draw->vShader, errbuffer, 512);
+    err = cgl_shader_compile(&p->draw.vShader);
+    cgl_shader_compile_info(&p->draw.vShader, errbuffer, 512);
     if (err)
     {
         LogError("error compiling vertex shader");
@@ -92,8 +77,8 @@ int PaddleLoadResources(Paddle *p)
         return err;
     }
 
-    err = cgl_shader_compile(&p->draw->fShader);
-    cgl_shader_compile_info(&p->draw->fShader, errbuffer, 512);
+    err = cgl_shader_compile(&p->draw.fShader);
+    cgl_shader_compile_info(&p->draw.fShader, errbuffer, 512);
     if (err)
     {
         LogError("error compiling fragment shader");
@@ -102,11 +87,11 @@ int PaddleLoadResources(Paddle *p)
     }
 
     // link into a program
-    cgl_shader_program_set_vertex_shader(&p->draw->prog, &p->draw->vShader);
-    cgl_shader_program_set_fragment_shader(&p->draw->prog, &p->draw->fShader);
+    cgl_shader_program_set_vertex_shader(&p->draw.prog, &p->draw.vShader);
+    cgl_shader_program_set_fragment_shader(&p->draw.prog, &p->draw.fShader);
 
-    err = cgl_shader_program_link(&p->draw->prog);
-    cgl_shader_program_link_info(&p->draw->prog, errbuffer, 512);
+    err = cgl_shader_program_link(&p->draw.prog);
+    cgl_shader_program_link_info(&p->draw.prog, errbuffer, 512);
     if (err)
     {
         LogError("error linking shader program");
@@ -119,7 +104,7 @@ int PaddleLoadResources(Paddle *p)
 void PaddleDraw(Paddle *p, Direction side)
 {
     int loc = -1;
-    Drawable *draw = p->draw;
+    Drawable *draw = &p->draw;
     struct cgl_shader_program *prog = &draw->prog;
     const int w = draw->uResolution[0];
     const int h = draw->uResolution[1];
@@ -167,35 +152,34 @@ void PaddleDraw(Paddle *p, Direction side)
 
 void PaddleMove(Paddle *p, Direction dir)
 {
-    const int w = p->draw->uResolution[0];
-    const int h = p->draw->uResolution[1];
-    const float incPos = p->draw->speed * h;
+    const int w = p->draw.uResolution[0];
+    const int h = p->draw.uResolution[1];
+    const float incPos = p->draw.speed * h;
 
-    // LogDebug("pos = %f %f", p->draw->pos[0], p->draw->pos[1]);
+    // LogDebug("pos = %f %f", p->draw.pos[0], p->draw.pos[1]);
 
     switch (dir)
     {
     case DirectionNone:
         break;
     case DirectionLeft:
-        p->draw->rotAngle -= glm_rad(2);
+        p->draw.rotAngle -= glm_rad(2);
         break;
     case DirectionRight:
-        p->draw->rotAngle += glm_rad(2);
+        p->draw.rotAngle += glm_rad(2);
         break;
     case DirectionUp:
-        if ((p->draw->pos[1] + (p->draw->rectSize[1] / h)) <= h)
-            p->draw->pos[1] += incPos;
+        if ((p->draw.pos[1] + (p->draw.rectSize[1] / h)) <= h)
+            p->draw.pos[1] += incPos;
         break;
     case DirectionDown:
-        if ((p->draw->pos[1] - (p->draw->rectSize[1] / h)) >= -h)
-            p->draw->pos[1] -= incPos;
+        if ((p->draw.pos[1] - (p->draw.rectSize[1] / h)) >= -h)
+            p->draw.pos[1] -= incPos;
         break;
     }
 }
 
 void PaddleDelete(Paddle *p)
 {
-    DrawableDelete(p->draw);
-    free(p->draw);
+    DrawableDelete(&p->draw);
 }

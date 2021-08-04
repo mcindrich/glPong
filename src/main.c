@@ -35,7 +35,6 @@ int main()
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // load icon first
@@ -46,6 +45,7 @@ int main()
         glfwTerminate();
         return -1;
     }
+
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "glPong", NULL, NULL);
     if (!window)
     {
@@ -73,42 +73,35 @@ int main()
     // init game context
     GameContextInit(&ctx, window);
 
-    // load resources
-    err = PaddleLoadResources(ctx.lPaddle);
+    err = GameContextLoadConfig(&ctx);
     if (err)
     {
-        LogError("unable to load left paddle resources...");
+        LogError("unable to load game configuration correctly...");
         goto error_out;
     }
-    err = PaddleLoadResources(ctx.rPaddle);
+
+    err = GameContextLoadModes(&ctx);
     if (err)
     {
-        LogError("unable to load right paddle resources...");
-        goto error_out;
-    }
-    err = BallLoadResources(ctx.ball);
-    if (err)
-    {
-        LogError("unable to load ball resources...");
+        LogError("unable to load game modes...");
         goto error_out;
     }
 
     /* Intializes random number generator */
     srand(time(NULL));
 
+    // load game main menu
     GameContextLoadMenu(&ctx);
-
-    int over = 0;
 
     // all resources loaded normally -> start drawing the window and the game
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window, &ctx);
+        ctx.currentMode->processInput(ctx.currentMode);
         glfwGetWindowSize(window, &wWidth, &wHeight);
 
         if (ctx.state == GameStateMenu)
         {
-            GameMenuSetup(&ctx.menu, &ctx.state, wWidth, wHeight);
+            GameMenuSetup(&ctx.menu, &ctx.state, wWidth, wHeight, ctx.modes, ctx.modes_count, &ctx.currentMode);
         }
 
         glClearColor(0, 0, 0, 1.0f);
@@ -120,43 +113,23 @@ int main()
         }
         else if (ctx.state == GameStatePlaying)
         {
-            if (ctx.ball->direction == DirectionNone)
-            {
-                ctx.ball->direction = (rand() % 2 == 0) ? DirectionLeft : DirectionRight;
-                const Direction dir = ctx.ball->direction;
-                glm_vec2_copy((vec2){1, 0}, ctx.ball->dirUnitVec);
-            }
-            // set resolution for all drawables
-            glm_vec2((vec2){wWidth, wHeight}, ctx.lPaddle->draw->uResolution);
-            glm_vec2((vec2){wWidth, wHeight}, ctx.rPaddle->draw->uResolution);
-            glm_vec2((vec2){wWidth, wHeight}, ctx.ball->draw->uResolution);
-
-            if (ctx.ball->draw->speed < 0)
-            {
-                BallCheckPaddleCollision(ctx.ball, ctx.lPaddle);
-            }
-            else
-            {
-                BallCheckPaddleCollision(ctx.ball, ctx.rPaddle);
-            }
-            over = BallCheckWallCollision(ctx.ball);
-            if (over)
-            {
-                ctx.state = GameStateMenu;
-                GameContextGameOver(&ctx);
-            }
-
-            // draw objects
-            BallDraw(ctx.ball);
-            PaddleDraw(ctx.lPaddle, DirectionLeft);
-            PaddleDraw(ctx.rPaddle, DirectionRight);
+            ctx.currentMode->draw(ctx.currentMode, &ctx.state, wWidth, wHeight);
+        }
+        else if (ctx.state == GameStateOver)
+        {
+            GameContextGameOver(&ctx);
+            ctx.state = GameStateMenu;
         }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    goto out;
+
 error_out:
+    LogError("errors occured... stopping the game");
+out:
     GameContextDelete(&ctx);
     glfwTerminate();
     if (winIcon.pixels)
@@ -170,36 +143,4 @@ static void framebufferSizeCB(GLFWwindow *window, int w, int h)
 {
     // change viewport to match new window size
     glViewport(0, 0, w, h);
-}
-
-static void processInput(GLFWwindow *window, GameContext *ctx)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, 1);
-    }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        PaddleMove(ctx->rPaddle, DirectionUp);
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        PaddleMove(ctx->rPaddle, DirectionDown);
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        PaddleMove(ctx->rPaddle, DirectionLeft);
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    {
-        PaddleMove(ctx->rPaddle, DirectionRight);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        PaddleMove(ctx->lPaddle, DirectionUp);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        PaddleMove(ctx->lPaddle, DirectionDown);
-    }
 }

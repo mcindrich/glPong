@@ -31,6 +31,7 @@ struct Drawable
 };
 
 Drawable *DrawableNew();
+void DrawableInit(Drawable *d);
 void DrawableSetSpeed(Drawable *d, float s);
 void DrawableSetDefaults(Drawable *d);
 void DrawableSetRectSize(Drawable *d, vec2 s);

@@ -24,6 +24,8 @@ set(
     "src/glPong/drawable.c"
     "src/glPong/game/menu.c"
     "src/glPong/game/context.c"
+    "src/glPong/game/mode.c"
+    "src/glPong/game/config.c"
     "deps/libs/cJSON/cJSON.c"
 )
 
@@ -35,7 +37,15 @@ add_executable(
     ${SOURCES}
 )
 
+add_subdirectory(
+    "src/modes/classic"
+)
+
+add_subdirectory(
+    "src/modes/speedplusplus"
+)
+
 target_link_libraries(
     ${CMAKE_PROJECT_NAME} 
-    PRIVATE GLEW::GLEW glfw cglm cgl
+    PRIVATE GLEW::GLEW glfw cglm cgl game-mode-classic game-mode-speedplusplus
 )

@@ -33,6 +33,22 @@ Drawable *DrawableNew()
     return d;
 }
 
+void DrawableInit(Drawable *d)
+{
+    cgl_vbo_init(&d->vbo);
+    cgl_ebo_init(&d->ebo);
+    cgl_vao_init(&d->vao);
+
+    cgl_shader_init(&d->vShader);
+    cgl_shader_init(&d->fShader);
+    cgl_shader_program_init(&d->prog);
+
+    glm_vec4((vec3){0, 0, 0}, 0, d->pos);
+
+    d->speed = 0;
+    d->rotAngle = 0;
+}
+
 void DrawableSetSpeed(Drawable *d, float s)
 {
     d->speed = s;

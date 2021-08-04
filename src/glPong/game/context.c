@@ -1,75 +1,76 @@
-#include "cglm/vec2.h"
-#include "glPong/game/menu.h"
-#include "glPong/game/state.h"
-#include "glPong/paddle.h"
+#include "glPong/log.h"
+#include <cglm/vec2.h>
+#include <glPong/game/config.h>
+#include <glPong/game/menu.h>
+#include <glPong/game/mode.h>
+#include <glPong/game/state.h>
+#include <glPong/paddle.h>
 #include <glPong/game/context.h>
 #include <cJSON.h>
+#include <assert.h>
 
-static char *readFile(const char *path);
+#define CONFIG_PATH "data/config.json"
+#define LOAD_GAME_MODE(ctx, modeName)                                                                                  \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        extern GameMode modeName;                                                                                      \
+        if ((ctx)->modes_count < GAME_MODES_MAX_COUNT)                                                                 \
+        {                                                                                                              \
+            (ctx)->modes[(ctx)->modes_count] = &modeName;                                                              \
+            (ctx)->modes_count++;                                                                                      \
+        }                                                                                                              \
+    } while (0)
+
 static void setDefaults(GameContext *gc);
 
 void GameContextInit(GameContext *gc, GLFWwindow *winPtr)
 {
-    // load paddles and a ball
-    char *cfgData = NULL;
-
-    gc->lPaddle = PaddleNew();
-    gc->rPaddle = PaddleNew();
-    gc->ball = BallNew();
-
-    gc->winPtr = winPtr;
-    gc->state = GameStatePlaying;
-
-    setDefaults(gc);
-
-    // load json config and init data from it
-    cfgData = readFile("data/config.json");
-    if (cfgData)
-    {
-        cJSON *root = cJSON_Parse(cfgData);
-        cJSON *paddle = NULL;
-        cJSON *ball = NULL;
-
-        paddle = cJSON_GetObjectItem(root, "paddle");
-        ball = cJSON_GetObjectItem(root, "ball");
-        if (paddle)
-        {
-            cJSON *paddleW = cJSON_GetObjectItem(paddle, "width");
-            cJSON *paddleH = cJSON_GetObjectItem(paddle, "height");
-            cJSON *paddleSpeed = cJSON_GetObjectItem(paddle, "speed");
-
-            if (cJSON_IsNumber(paddleW) && cJSON_IsNumber(paddleH))
-            {
-                DrawableSetRectSize(gc->lPaddle->draw, (vec2){paddleW->valuedouble, paddleH->valuedouble});
-                DrawableSetRectSize(gc->rPaddle->draw, (vec2){paddleW->valuedouble, paddleH->valuedouble});
-            }
-
-            if (cJSON_IsNumber(paddleSpeed))
-            {
-                DrawableSetSpeed(gc->lPaddle->draw, paddleSpeed->valuedouble);
-                DrawableSetSpeed(gc->rPaddle->draw, paddleSpeed->valuedouble);
-            }
-        }
-        if (ball)
-        {
-            cJSON *ballW = cJSON_GetObjectItem(ball, "width");
-            cJSON *ballH = cJSON_GetObjectItem(ball, "height");
-            cJSON *ballSpeed = cJSON_GetObjectItem(ball, "speed");
-
-            if (cJSON_IsNumber(ballW) && cJSON_IsNumber(ballH))
-            {
-                DrawableSetRectSize(gc->ball->draw, (vec2){ballW->valuedouble, ballH->valuedouble});
-            }
-
-            if (cJSON_IsNumber(ballSpeed))
-            {
-                DrawableSetSpeed(gc->ball->draw, ballSpeed->valuedouble);
-            }
-        }
-        cJSON_Delete(root);
-        free(cfgData);
-    }
     GameMenuInit(&gc->menu);
+    GameConfigInit(&gc->cfg);
+    gc->winPtr = winPtr;
+    gc->state = GameStateMenu;
+
+    // set game modes to 0
+    gc->modes_count = 0;
+    for (int i = 0; i < GAME_MODES_MAX_COUNT; i++)
+    {
+        gc->modes[i] = NULL;
+    }
+    gc->currentMode = NULL;
+}
+
+int GameContextLoadConfig(GameContext *gc)
+{
+    return GameConfigLoad(&gc->cfg, CONFIG_PATH);
+}
+
+int GameContextLoadModes(GameContext *gc)
+{
+    int err = 0;
+    // load all wanted game modes
+    LOAD_GAME_MODE(gc, classicGameMode);
+    LOAD_GAME_MODE(gc, speedPlusPlusGameMode);
+
+    // for now use this to assert all game modes above are loaded
+    assert(gc->modes_count == 2);
+
+    // after loading all game modes -> init them all and load their resources
+    for (int i = 0; i < gc->modes_count; i++)
+    {
+        GameMode *mode = gc->modes[i];
+        GameModeInit(mode, gc->winPtr, &gc->cfg);
+        err = GameModeLoadResources(mode);
+        if (err)
+        {
+            LogError("unable to load resources for game mode '%s'", mode->name);
+            return err;
+        }
+    }
+
+    // set to the first game mode loaded initially
+    gc->currentMode = gc->modes[0];
+
+    return err;
 }
 
 void GameContextLoadMenu(GameContext *gc)
@@ -82,53 +83,20 @@ void GameContextGameOver(GameContext *gc)
 {
     GameMenuDelete(&gc->menu);
     GameMenuLoad(&gc->menu, gc->winPtr);
-    setDefaults(gc);
-    DrawableSetDefaults(gc->ball->draw);
-    DrawableSetDefaults(gc->lPaddle->draw);
-    DrawableSetDefaults(gc->rPaddle->draw);
 }
 
 void GameContextDelete(GameContext *gc)
 {
-    PaddleDelete(gc->lPaddle);
-    free(gc->lPaddle);
-    PaddleDelete(gc->rPaddle);
-    free(gc->rPaddle);
-    BallDelete(gc->ball);
-    free(gc->ball);
     GameMenuDelete(&gc->menu);
-}
-
-static char *readFile(const char *path)
-{
-    char *buffer = 0;
-    long length;
-    FILE *f = fopen(path, "rb");
-
-    if (f)
-    {
-        fseek(f, 0, SEEK_END);
-        length = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        buffer = malloc(sizeof(char) * (length + 1));
-        if (buffer)
-        {
-            fread(buffer, sizeof(char), length, f);
-        }
-        buffer[length] = 0;
-        fclose(f);
-    }
-
-    return buffer;
 }
 
 static void setDefaults(GameContext *gc)
 {
     // load defaults first
-    DrawableSetSpeed(gc->lPaddle->draw, 0.03);
-    DrawableSetSpeed(gc->rPaddle->draw, 0.03);
-    DrawableSetSpeed(gc->ball->draw, 0.01);
-    DrawableSetRectSize(gc->lPaddle->draw, (vec2){20, 70});
-    DrawableSetRectSize(gc->rPaddle->draw, (vec2){20, 70});
-    DrawableSetRectSize(gc->ball->draw, (vec2){20, 20});
+    // DrawableSetSpeed(&gc->lPaddle.draw, 0.03);
+    // DrawableSetSpeed(&gc->rPaddle.draw, 0.03);
+    // DrawableSetSpeed(&gc->ball.draw, 0.01);
+    // DrawableSetRectSize(&gc->lPaddle.draw, (vec2){20, 70});
+    // DrawableSetRectSize(&gc->rPaddle.draw, (vec2){20, 70});
+    // DrawableSetRectSize(&gc->ball.draw, (vec2){20, 20});
 }

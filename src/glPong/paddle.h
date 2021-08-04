@@ -8,10 +8,10 @@ typedef struct Paddle Paddle;
 
 struct Paddle
 {
-    Drawable *draw;
+    Drawable draw;
 };
 
-Paddle *PaddleNew();
+void PaddleInit(Paddle *p);
 int PaddleLoadResources(Paddle *p);
 void PaddleDraw(Paddle *p, Direction side);
 void PaddleMove(Paddle *p, Direction up);
