@@ -14,7 +14,6 @@ link_directories(
     "deps/libs/cglm/build/"
     "deps/libs/cgl/build/"
 )
-     
 
 set(
     SOURCES

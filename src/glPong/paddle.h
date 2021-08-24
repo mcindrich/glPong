@@ -14,7 +14,7 @@ struct Paddle
 void PaddleInit(Paddle *p);
 int PaddleLoadResources(Paddle *p);
 void PaddleDraw(Paddle *p, Direction side);
-void PaddleMove(Paddle *p, Direction up);
+void PaddleMove(Paddle *p, Direction up, float deltaTime);
 void PaddleDelete(Paddle *p);
 
 #endif // glPong_PADDLE_H

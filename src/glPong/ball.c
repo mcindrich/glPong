@@ -116,18 +116,18 @@ int BallCheckWallCollision(Ball *b)
 
     const float speed = b->draw.speed;
 
-    LogDebug("left, right = %f, %f", distLeft, distRight);
+    // LogDebug("left, right = %f, %f", distLeft, distRight);
 
     if (distLeft < rectLen)
     {
         // end game -> right wins
-        LogDebug("end game -> right wins");
+        // LogDebug("end game -> right wins");
         return 1;
     }
     else if (distRight < rectLen)
     {
         // end game -> left wins
-        LogDebug("end game -> left wins");
+        // LogDebug("end game -> left wins");
         return 1;
     }
     else if (distUp < rectLen)
@@ -167,7 +167,7 @@ int BallCheckPaddleCollision(Ball *b, Paddle *p)
     if (distMiddle < rectLen)
     {
         // ball collides with the middle of the paddle -> move ball straight
-        LogDebug("ball hit middle");
+        // LogDebug("ball hit middle");
         if (b->draw.speed < 0)
         {
             b->direction = DirectionRight;
@@ -181,7 +181,7 @@ int BallCheckPaddleCollision(Ball *b, Paddle *p)
     }
     else if (distUpper < rectLen)
     {
-        LogDebug("ball hit upper");
+        // LogDebug("ball hit upper");
         // ball collides with the upper part of the paddle -> move ball down with rand() angle
         if (b->draw.speed < 0)
         {
@@ -200,7 +200,7 @@ int BallCheckPaddleCollision(Ball *b, Paddle *p)
     }
     else if (distLower < rectLen)
     {
-        LogDebug("ball hit lower");
+        // LogDebug("ball hit lower");
         // ball collides with the lower part of the paddle -> move ball up with rand() angle
         if (b->draw.speed < 0)
         {
@@ -242,11 +242,11 @@ void BallDraw(Ball *b)
         draw->speed *= -1;
     }
 
-    LogDebug("speed = %f", draw->speed);
-    LogDebug("unitVec = %f, %f", b->dirUnitVec[0], b->dirUnitVec[1]);
+    // LogDebug("speed = %f", draw->speed);
+    // LogDebug("unitVec = %f, %f", b->dirUnitVec[0], b->dirUnitVec[1]);
 
-    draw->pos[0] += b->dirUnitVec[0] * draw->speed * draw->uResolution[0];
-    draw->pos[1] += b->dirUnitVec[1] * draw->speed * draw->uResolution[1];
+    draw->pos[0] += b->dirUnitVec[0] * draw->speed * b->deltaTime * draw->uResolution[0];
+    draw->pos[1] += b->dirUnitVec[1] * draw->speed * b->deltaTime * draw->uResolution[1];
     // draw->pos[1] = 70;
 
     // LogDebug("(x, y) = (%f, %f)", draw->pos[0], draw->pos[1]);

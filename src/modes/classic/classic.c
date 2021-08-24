@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 int ClassicModeInit(GameMode *mode, GLFWwindow *win);
-int ClassicModeProcessInput(GameMode *mode);
+int ClassicModeProcessInput(GameMode *mode, float deltaTime);
 int ClassicModeDraw(GameMode *mode, GameState *state, int wWidth, int wHeight);
 int ClassicModeDelete(GameMode *mode);
 
@@ -22,10 +22,12 @@ int ClassicModeInit(GameMode *mode, GLFWwindow *win)
     return err;
 }
 
-int ClassicModeProcessInput(GameMode *mode)
+int ClassicModeProcessInput(GameMode *mode, float deltaTime)
 {
     int err = 0;
     GLFWwindow *window = mode->win;
+
+    mode->ball.deltaTime = deltaTime;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -33,27 +35,27 @@ int ClassicModeProcessInput(GameMode *mode)
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionUp);
+        PaddleMove(&mode->rPaddle, DirectionUp, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionDown);
+        PaddleMove(&mode->rPaddle, DirectionDown, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionLeft);
+        PaddleMove(&mode->rPaddle, DirectionLeft, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionRight);
+        PaddleMove(&mode->rPaddle, DirectionRight, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        PaddleMove(&mode->lPaddle, DirectionUp);
+        PaddleMove(&mode->lPaddle, DirectionUp, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        PaddleMove(&mode->lPaddle, DirectionDown);
+        PaddleMove(&mode->lPaddle, DirectionDown, deltaTime);
     }
     return err;
 }
@@ -62,6 +64,7 @@ int ClassicModeDraw(GameMode *mode, GameState *state, int wWidth, int wHeight)
 {
     int err = 0;
     int over = 0;
+
     if (mode->ball.direction == DirectionNone)
     {
         mode->ball.direction = (rand() % 2 == 0) ? DirectionLeft : DirectionRight;

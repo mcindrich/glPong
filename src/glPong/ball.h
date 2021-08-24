@@ -13,6 +13,7 @@ struct Ball
     Direction direction; // indicates direction of the ball (left or right)
     vec2 dirUnitVec;     // direction unit vector -> initially set to left or right (1, 0) or (-1, 0)
     float radius;        // ball circle radius
+    float deltaTime;     // framerate stuff
 };
 
 void BallInit(Ball *b);

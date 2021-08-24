@@ -150,7 +150,7 @@ void PaddleDraw(Paddle *p, Direction side)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void PaddleMove(Paddle *p, Direction dir)
+void PaddleMove(Paddle *p, Direction dir, float deltaTime)
 {
     const int w = p->draw.uResolution[0];
     const int h = p->draw.uResolution[1];
@@ -163,18 +163,18 @@ void PaddleMove(Paddle *p, Direction dir)
     case DirectionNone:
         break;
     case DirectionLeft:
-        p->draw.rotAngle -= glm_rad(2);
+        // p->draw.rotAngle -= glm_rad(2);
         break;
     case DirectionRight:
-        p->draw.rotAngle += glm_rad(2);
+        // p->draw.rotAngle += glm_rad(2);
         break;
     case DirectionUp:
         if ((p->draw.pos[1] + (p->draw.rectSize[1] / h)) <= h)
-            p->draw.pos[1] += incPos;
+            p->draw.pos[1] += incPos * deltaTime;
         break;
     case DirectionDown:
         if ((p->draw.pos[1] - (p->draw.rectSize[1] / h)) >= -h)
-            p->draw.pos[1] -= incPos;
+            p->draw.pos[1] -= incPos * deltaTime;
         break;
     }
 }

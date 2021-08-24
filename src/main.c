@@ -13,8 +13,11 @@
 #include <stb_image.h>
 
 // window #def's - starting width and height
-#define WINDOW_WIDTH 1200
-#define WINDOW_HEIGHT 700
+// #define WINDOW_WIDTH 1200
+// #define WINDOW_HEIGHT 700
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 
 // helpers
 static void framebufferSizeCB(GLFWwindow *window, int w, int h);
@@ -92,12 +95,16 @@ int main()
 
     // load game main menu
     GameContextLoadMenu(&ctx);
+    float lastTime = glfwGetTime();
 
     // all resources loaded normally -> start drawing the window and the game
     while (!glfwWindowShouldClose(window))
     {
-        ctx.currentMode->processInput(ctx.currentMode);
+        float currTime = glfwGetTime();
+
+        ctx.currentMode->processInput(ctx.currentMode, currTime - lastTime);
         glfwGetWindowSize(window, &wWidth, &wHeight);
+        lastTime = currTime;
 
         if (ctx.state == GameStateMenu)
         {

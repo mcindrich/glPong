@@ -2,11 +2,11 @@
     "paddle": {
         "width": 20,
         "height": 80,
-        "speed": 0.02
+        "speed": 1
     },
     "ball": {
-        "speed": 0.01,
-        "width": 20,
-        "height": 20
+        "speed": 1,
+        "width": 22,
+        "height": 22
     }
 }

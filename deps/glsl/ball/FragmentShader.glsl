@@ -20,9 +20,16 @@ vec4 circle(vec2 pos, vec2 center, float radius) {
 
 void main()
 {
-	vec2 uv = gl_FragCoord.xy;
-	vec2 center = uResolution * 0.5;
-	float radius = 0.5 * uRectSize.y;
 
-    outColor = circle(uv, uRectPos / 2 + center, radius);
+    vec4 outerColor = vec4(0.0f);
+    vec4 innerColor = vec4(1.0f, 1.0f, 0.75f, 1.0f);
+
+    vec2 uv = gl_FragCoord.xy;
+    float radiusInner = 0.3333 * uRectSize.y, radiusOuter = 0.5 * uRectSize.y;
+    vec2 center = uResolution / 2;
+    center = uRectPos / 2 + center;
+	float dist = length(uv - center);
+    outColor = mix(innerColor, outerColor, smoothstep(radiusInner, radiusOuter, dist));
+
+    // outColor = circle(uv, uRectPos / 2 + center, radius);
 }

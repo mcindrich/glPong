@@ -83,11 +83,18 @@ void GameContextGameOver(GameContext *gc)
 {
     GameMenuDelete(&gc->menu);
     GameMenuLoad(&gc->menu, gc->winPtr);
+    GameModeDelete(gc->currentMode);
+    GameModeInit(gc->currentMode, gc->winPtr, &gc->cfg);
+    GameModeLoadResources(gc->currentMode);
 }
 
 void GameContextDelete(GameContext *gc)
 {
     GameMenuDelete(&gc->menu);
+    for (int i = 0; i < gc->modes_count; i++)
+    {
+        GameModeDelete(gc->modes[i]);
+    }
 }
 
 static void setDefaults(GameContext *gc)

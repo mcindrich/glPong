@@ -1,8 +1,9 @@
+#include "glPong/direction.h"
 #include <glPong/game/mode.h>
 #include <GLFW/glfw3.h>
 
 int SpeedPlusPlusModeInit(GameMode *mode, GLFWwindow *win);
-int SpeedPlusPlusModeProcessInput(GameMode *mode);
+int SpeedPlusPlusModeProcessInput(GameMode *mode, float deltaTime);
 int SpeedPlusPlusModeDraw(GameMode *mode, GameState *state, int wWidth, int wHeight);
 int SpeedPlusPlusModeDelete(GameMode *mode);
 
@@ -22,10 +23,12 @@ int SpeedPlusPlusModeInit(GameMode *mode, GLFWwindow *win)
     return err;
 }
 
-int SpeedPlusPlusModeProcessInput(GameMode *mode)
+int SpeedPlusPlusModeProcessInput(GameMode *mode, float deltaTime)
 {
     int err = 0;
     GLFWwindow *window = mode->win;
+
+    mode->ball.deltaTime = deltaTime;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -33,27 +36,35 @@ int SpeedPlusPlusModeProcessInput(GameMode *mode)
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionUp);
+        PaddleMove(&mode->rPaddle, DirectionUp, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionDown);
+        PaddleMove(&mode->rPaddle, DirectionDown, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionLeft);
+        PaddleMove(&mode->rPaddle, DirectionLeft, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        PaddleMove(&mode->rPaddle, DirectionRight);
+        PaddleMove(&mode->rPaddle, DirectionRight, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        PaddleMove(&mode->lPaddle, DirectionUp);
+        PaddleMove(&mode->lPaddle, DirectionUp, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        PaddleMove(&mode->lPaddle, DirectionDown);
+        PaddleMove(&mode->lPaddle, DirectionDown, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        PaddleMove(&mode->lPaddle, DirectionLeft, deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        PaddleMove(&mode->lPaddle, DirectionRight, deltaTime);
     }
     return err;
 }
@@ -67,6 +78,10 @@ int SpeedPlusPlusModeDraw(GameMode *mode, GameState *state, int wWidth, int wHei
         mode->ball.direction = (rand() % 2 == 0) ? DirectionLeft : DirectionRight;
         const Direction dir = mode->ball.direction;
         glm_vec2_copy((vec2){1, 0}, mode->ball.dirUnitVec);
+        if (rand() % 2 == 0)
+        {
+            mode->ball.draw.speed *= -1;
+        }
     }
     // set resolution for all drawables
     glm_vec2((vec2){wWidth, wHeight}, mode->lPaddle.draw.uResolution);
@@ -79,7 +94,7 @@ int SpeedPlusPlusModeDraw(GameMode *mode, GameState *state, int wWidth, int wHei
         collidesWithPaddle = BallCheckPaddleCollision(&mode->ball, &mode->lPaddle);
         if (collidesWithPaddle)
         {
-            mode->ball.draw.speed += 0.001f;
+            mode->ball.draw.speed += 0.01f;
         }
     }
     else

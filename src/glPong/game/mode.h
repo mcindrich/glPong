@@ -30,7 +30,7 @@ struct GameMode
 
     // callbacks
     int (*init)(GameMode *mode, GLFWwindow *win);
-    int (*processInput)(GameMode *mode);
+    int (*processInput)(GameMode *mode, float deltaTime);
     int (*draw)(GameMode *mode, GameState *state, int wWidth, int wHeight);
     int (*delete)(GameMode *mode);
 };
